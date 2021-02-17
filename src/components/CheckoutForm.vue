@@ -1,7 +1,7 @@
 <template>
   <div id="checkout-form">
     <h4 class="mb-3">Billing address</h4>
-    <form class="needs-validation">
+    <form class="needs-validation" v-on:submit.prevent="submit">
       <div class="row">
         <div class="col-md-6 mb-3">
           <label for="firstName">
@@ -9,15 +9,16 @@
             <span class="text-danger">*</span>
           </label>
           <input
-            v-model="first_name"
+            v-model="$v.first_name.$model"
             type="text"
             class="form-control"
+            :class="{'is-invalid': validationStatus($v.first_name)}"
             id="firstName"
             placeholder
             value
             required
           />
-          <div class="invalid-feedback">Valid first name is required.</div>
+          <div v-if="!$v.first_name.required" class="invalid-feedback">Valid first name is required.</div>
         </div>
         <div class="col-md-6 mb-3">
           <label for="lastName">
@@ -25,15 +26,16 @@
             <span class="text-danger">*</span>
           </label>
           <input
-            v-model="last_name"
+            v-model="$v.last_name.$model"
             type="text"
             class="form-control"
+            :class="{'is-invalid': validationStatus($v.last_name)}"
             id="lastName"
             placeholder
             value
             required
           />
-          <div class="invalid-feedback">Valid last name is required.</div>
+          <div v-if="!$v.last_name.required" class="invalid-feedback">Valid last name is required.</div>
         </div>
       </div>
 
@@ -43,13 +45,17 @@
           <span class="text-danger">*</span>
         </label>
         <input
-          v-model="email"
+          v-model="$v.email.$model"
           type="email"
           class="form-control"
+          :class="{'is-invalid': validationStatus($v.email)}"
           id="email"
           placeholder="you@example.com"
         />
-        <div class="invalid-feedback">Please enter a valid email address for shipping updates.</div>
+        <div
+          v-if="!$v.email.required"
+          class="invalid-feedback"
+        >Please enter a valid email address for shipping updates.</div>
       </div>
 
       <div class="mb-3">
@@ -58,13 +64,17 @@
           <span class="text-danger">*</span>
         </label>
         <input
-          v-model.number="phone"
+          v-model.number="$v.phone.$model"
           type="number"
           class="form-control"
+          :class="{'is-invalid': validationStatus($v.phone)}"
           id="phonenumber"
           placeholder
         />
-        <div class="invalid-feedback">Please enter a valid Phone Number for shipping updates.</div>
+        <div
+          v-if="!$v.phone.required"
+          class="invalid-feedback"
+        >Please enter a valid Phone Number for shipping updates.</div>
       </div>
 
       <div class="mb-3">
@@ -73,14 +83,18 @@
           <span class="text-danger">*</span>
         </label>
         <input
-          v-model="address_1"
+          v-model="$v.address_1.$model"
           type="text"
           class="form-control"
+          :class="{'is-invalid': validationStatus($v.address_1)}"
           id="address"
           placeholder="1234 Main St"
           required
         />
-        <div class="invalid-feedback">Please enter your shipping address.</div>
+        <div
+          v-if="!$v.address_1.required"
+          class="invalid-feedback"
+        >Please enter your shipping address.</div>
       </div>
 
       <div class="mb-3">
@@ -89,7 +103,7 @@
           <span class="text-muted">(Optional)</span>
         </label>
         <input
-          v-model="address_2"
+          v-model="$v.address_2.$model"
           type="text"
           class="form-control"
           id="address2"
@@ -103,27 +117,50 @@
             Country
             <span class="text-danger">*</span>
           </label>
-          <select v-model="country" class="custom-select d-block w-100" id="country" required>
+          <select
+            v-model="$v.country.$model"
+            :class="{'is-invalid': validationStatus($v.country)}"
+            class="custom-select d-block w-100"
+            id="country"
+            required
+          >
             <option value>Choose...</option>
             <option>United States</option>
           </select>
-          <div class="invalid-feedback">Please select a valid country.</div>
+          <div v-if="!$v.country.required" class="invalid-feedback">Please select a valid country.</div>
         </div>
         <div class="col-md-4 mb-3">
           <label for="state">
             State
             <span class="text-danger">*</span>
           </label>
-          <select v-model="state" class="custom-select d-block w-100" id="state" required>
+          <select
+            v-model="$v.state.$model"
+            :class="{'is-invalid': validationStatus($v.state)}"
+            class="custom-select d-block w-100"
+            id="state"
+            required
+          >
             <option value>Choose...</option>
             <option>California</option>
           </select>
-          <div class="invalid-feedback">Please provide a valid state.</div>
+          <div v-if="!$v.state.required" class="invalid-feedback">Please provide a valid state.</div>
         </div>
         <div class="col-md-3 mb-3">
-          <label for="zip">Zip</label>
-          <input v-model="zip" type="text" class="form-control" id="zip" placeholder required />
-          <div class="invalid-feedback">Zip code required.</div>
+          <label for="zip">
+            Zip
+            <span class="text-danger">*</span>
+          </label>
+          <input
+            v-model="$v.zip.$model"
+            type="text"
+            :class="{'is-invalid': validationStatus($v.zip)}"
+            class="form-control"
+            id="zip"
+            placeholder
+            required
+          />
+          <div v-if="!$v.zip.required" class="invalid-feedback">Zip code required.</div>
         </div>
       </div>
       <!-- <hr class="mb-4" />
@@ -205,25 +242,48 @@
 </template>
 
 <script>
+import { required, email } from "vuelidate/lib/validators";
+
 export default {
   name: "CheckoutForm",
 
   data() {
     return {
-      first_name: null,
-      last_name: null,
-      email: null,
-      phone: null,
-      address_1: null,
-      address_2: null,
-      country: null,
-      state: null,
-      zip: null,
+      first_name: "",
+      last_name: "",
+      email: "",
+      phone: "",
+      address_1: "",
+      address_2: "",
+      country: "",
+      state: "",
+      zip: "",
     };
   },
 
+  validations: {
+    first_name: { required },
+    last_name: { required },
+    email: { required, email },
+    phone: { required },
+    address_1: { required },
+    address_2: {},
+    country: { required },
+    state: { required },
+    zip: { required },
+  },
+
   methods: {
-    submit() {},
+    validationStatus(validation) {
+      return typeof validation != "undefined" ? validation.$error : false;
+    },
+
+    submit() {
+      this.$v.$touch();
+      if (this.$v.$pendding || this.$v.$error) return;
+
+      alert("Data Submit");
+    },
   },
 };
 </script>
