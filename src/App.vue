@@ -1,7 +1,9 @@
 <template>
   <div class="container mt-5">
     <header class="text-center mb-5">
-      <h2 class="pt-4">CHECKOUT FORM</h2>
+      <h2 class="pt-4">
+        <img src="./assets/logo.png" alt /> CHECKOUT FORM
+      </h2>
     </header>
     <div class="row">
       <div class="col-md-4 order-md-2 mb-4">
@@ -30,5 +32,9 @@ export default {
 <style>
 * {
   font-family: "sans-serif";
+}
+img {
+  height: 3rem;
+  widows: 3rem;
 }
 </style>
